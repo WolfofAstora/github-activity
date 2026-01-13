@@ -2,16 +2,35 @@ import urllib.request
 import json
 import argparse
 
-def getResponse(url: str) -> list:
+def getResponse(username: str) -> list:
+    url = f"https://api.github.com/users/{username}/events"
     try:
         with urllib.request.urlopen(url) as response:
             data = response.read().decode('utf-8')
-            json_data = json.loads(data)
-            print(type(json_data))
+            rawOutput = json.loads(data)
+          
     except Exception as e:
         print(f"Following error as occdurred: {e}")
 
-    return json_data
+    return rawOutput
+
+def generateOutput(filteredContent: dict) -> str:
+  for item in filteredContent:
+    print(filteredContent[item])
+
+
+  return ""
+
+def parseTypesAndOccurrences(ApiResponse:list) -> dict:
+  filteredContent = {}
+  for event in ApiResponse:
+    if event["type"] not in filteredContent:
+      filteredContent[event["type"]] = 1
+    else:
+      filteredContent.update({event["type"]: filteredContent[event["type"]]+1})
+  
+  return filteredContent
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -19,50 +38,9 @@ if __name__ == '__main__':
                         description="This will fetch recent activity of a GitHub user and display it in the terminal.",
                         usage="github-activity <username>")
     parser.add_argument('username')
-
     args = parser.parse_args()
-    print(args)
-"""
-    url = "https://api.github.com/users/kamranahmedse/events"
-    response = getResponse(url)
+    username = args.username
+    data = getResponse(username)
 
-    for element in response:
-        print(element)
-        for item in element:
-            print(item)
-        break
-"""
-
-
-
-
-
-"""
-
-{
-  "id": "7411874171",
-  "type": "PushEvent",
-  "actor": {
-    "id": 4921183,
-    "login": "kamranahmedse",
-    "display_login": "kamranahmedse",
-    "gravatar_id": "",
-    "url": "https://api.github.com/users/kamranahmedse",
-    "avatar_url": "https://avatars.githubusercontent.com/u/4921183?"
-  },
-  "repo": {
-    "id": 1133135515,
-    "name": "kamranahmedse/timelang",
-    "url": "https://api.github.com/repos/kamranahmedse/timelang"
-  },
-  "payload": {
-    "repository_id": 1133135515,
-    "push_id": 29706963806,
-    "ref": "refs/heads/main",
-    "head": "d1bb34cb2bd8a2bba7c84e658b650fc675b41a3a",
-    "before": "bb6757b7ff6e66f7fd268d290942fb04a8c81497"
-  },
-  "public": true,
-  "created_at": "2026-01-13T02:11:22Z"
-}
-"""
+    content = parseTypesAndOccurrences(data)
+    generateOutput(content)
