@@ -16,7 +16,7 @@ def getResponse(username: str) -> list:
 
 def generateOutput(filteredContent: dict) -> str:
   for item in filteredContent:
-    print(filteredContent[item])
+    print(f"{item}: {filteredContent[item]}")
 
 
   return ""
