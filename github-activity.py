@@ -14,21 +14,29 @@ def getResponse(username: str) -> list:
 
     return rawOutput
 
-def generateOutput(filteredContent: dict) -> str:
-  for item in filteredContent:
-    print(f"{item}: {filteredContent[item]}")
+def generateOutput(filteredContent: dict):
+  for repo, events in filteredContent.items():
+    for event in events:
+      match event:
+        case "PushEvent":
+          print(f"Pushed {events[event]} commits to {repo}")
+        case "CreateEvent":
+          print(f"Created something for {repo}")
+        case "PullRequestEvent":
+          print(f"opened, closed, merged, reopened, assigned, unassigned, labeled, or unlabeled {events[event]} times for {repo}")
 
 
-  return ""
 
 def parseTypesAndOccurrences(ApiResponse:list) -> dict:
   filteredContent = {}
   for event in ApiResponse:
-    if event["type"] not in filteredContent:
-      filteredContent[event["type"]] = 1
+    if event["repo"]["name"] not in filteredContent:
+      filteredContent[event["repo"]["name"]] = {}
+    if event["type"] not in filteredContent[event["repo"]["name"]]:
+      filteredContent[event["repo"]["name"]][event["type"]] = 1
     else:
-      filteredContent.update({event["type"]: filteredContent[event["type"]]+1})
-  
+      filteredContent[event["repo"]["name"]].update({event["type"]: filteredContent[event["repo"]["name"]][event["type"]]+1})
+
   return filteredContent
 
 
